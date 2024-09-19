@@ -9,14 +9,18 @@ interface FixedLengthArray<T extends any, L extends number> extends Array<T> {
 
 type Case = "kebab" | "camel" | "title" | "lower" | "sentence";
 
+type CharCountOptions = {
+  totalMax?: number;
+  totalMin?: number;
+};
+
 type Options<T, L extends number> = {
   partsOfSpeech: FixedLengthArray<T, L>;
-  categories: Partial<
-    {
-      [K in PartsOfSpeech]: Categories[K][];
-    }
-  >;
+  categories: Partial<{
+    [K in PartsOfSpeech]: Categories[K][];
+  }>;
   format: Case;
+  charCount?: CharCountOptions;
 };
 
 export type RandomWordOptions<N extends number> = Partial<
@@ -32,13 +36,14 @@ export function generateSlug<N extends number>(
     partsOfSpeech: getDefaultPartsOfSpeech(numWords),
     categories: {},
     format: "kebab",
+    charCount: {},
   };
   const opts: Options<PartsOfSpeech, typeof numWords> = {
     ...defaultOptions,
     ...options,
   };
 
-  const words = [];
+  let words = [];
 
   for (let i = 0; i < numWords; i++) {
     const partOfSpeech = opts.partsOfSpeech[i];
@@ -50,7 +55,36 @@ export function generateSlug<N extends number>(
     words.push(rand);
   }
 
-  return formatter(words, opts.format);
+  let slug = formatter(words, opts.format);
+
+  if (
+    opts.charCount?.totalMax !== undefined &&
+    slug.length > opts.charCount.totalMax
+  ) {
+    while (slug.length > opts.charCount.totalMax) {
+      words.pop();
+      slug = formatter(words, opts.format);
+    }
+  }
+  if (
+    opts.charCount?.totalMin !== undefined &&
+    slug.length < opts.charCount.totalMin
+  ) {
+    while (slug.length < opts.charCount.totalMin) {
+      const partOfSpeech: PartsOfSpeech =
+        opts.partsOfSpeech[words.length % numWords];
+      const candidates: string[] = getWordsByCategory(
+        partOfSpeech,
+        opts.categories[partOfSpeech] as Categories[typeof partOfSpeech][]
+      );
+      const rand: string =
+        candidates[Math.floor(Math.random() * candidates.length)];
+      words.push(rand);
+      slug = formatter(words, opts.format);
+    }
+  }
+
+  return slug;
 }
 
 function getDefaultPartsOfSpeech<N extends number>(length: N) {
@@ -119,3 +153,4 @@ export function totalUniqueSlugs<N extends number>(
   }
   return combos;
 }
+

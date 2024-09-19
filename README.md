@@ -161,3 +161,23 @@ console.log(totalSlugs);
 ```
 
 Again, this `1000` is just an example. Importantly, this could help you determine that you're not comfortable with this limited combinatoric space and you can choose to add additional categories.
+
+
+# Character Count Constraints
+
+You can provide a `totalMax` and/or a `totalMin` to specify the number of characters for the generated slug:
+
+```javascript
+const shortSlug = generateSlug(2, {
+  categories: {
+    noun: ["animals"],
+    adjective: ["color"],
+  },
+  partsOfSpeech: ["adjective", "noun"],
+  charCount: {
+    totalMax: 15,
+    totalMin: 10,
+  },
+});
+// green-alligator
+```

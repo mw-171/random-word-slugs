@@ -63,6 +63,38 @@ describe("wordList", () => {
 });
 
 describe("generateSlug", () => {
+  it("respects totalMax character count", () => {
+    const maxChars = 15;
+    const slug = generateSlug(2, {
+      categories: {
+        noun: ["animals"],
+        adjective: ["color"],
+      },
+      partsOfSpeech: ["adjective", "noun"],
+      charCount: {
+        totalMax: maxChars,
+      },
+    });
+    expect(slug.length).toBeLessThanOrEqual(maxChars);
+  });
+
+  it("respects totalMin character count", () => {
+    const minChars = 10;
+    const slug = generateSlug(2, {
+      categories: {
+        noun: ["animals"],
+        adjective: ["color"],
+      },
+      partsOfSpeech: ["adjective", "noun"],
+      charCount: {
+        totalMin: minChars,
+      },
+    });
+    expect(slug.length).toBeGreaterThanOrEqual(minChars);
+  });
+});
+
+describe("generateSlug", () => {
   test("generates three random kebab-cased words by default", () => {
     const slug = generateSlug();
     const parts = slug.split("-");
@@ -184,3 +216,4 @@ describe("totalUniqueSlugs", () => {
     expect(num).toBe(actualTotal);
   });
 });
+
